@@ -11,7 +11,7 @@ const data = [
   { mes: "Jun", receita: 45900 },
 ];
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ value: number }> }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-[#23232b] rounded-lg px-3 py-2 text-xs text-white shadow">

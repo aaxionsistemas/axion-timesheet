@@ -1,4 +1,4 @@
-import { AlertTriangle, DollarSign, User } from "lucide-react";
+import { AlertTriangle, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const latePayments = [

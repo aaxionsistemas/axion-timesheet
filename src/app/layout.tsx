@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased min-h-screen">
         <ThemeProvider>
           <div className="bg-background text-foreground min-h-screen">
-            {children}
+        {children}
           </div>
         </ThemeProvider>
       </body>

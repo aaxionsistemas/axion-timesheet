@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/timesheet", label: "Timesheet", icon: Clock },
+  { href: "/timesheet", label: "Demandas", icon: Clock },
   { href: "/projects", label: "Projetos", icon: Folder },
   { href: "/reports", label: "Relatórios", icon: BarChart2 },
   { href: "/financial", label: "Financeiro", icon: DollarSign },

@@ -1,8 +1,55 @@
 {
-    "css.validate": false,
-    "less.validate": false,
-    "scss.validate": false,
-    "files.associations": {
-      "*.css": "tailwindcss"
-    }
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
+  "typescript.preferences.includeCompletionsForImportStatements": false,
+  "typescript.validate.enable": true,
+  "typescript.reportStyleChecksAsWarnings": false,
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.suggest.completeFunctionCalls": false,
+  "typescript.inlayHints.parameterNames.enabled": "none",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": false,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": false,
+  "typescript.inlayHints.enumMemberValues.enabled": false,
+  "typescript.preferences.useLabelDetailsInCompletionEntries": true,
+  "typescript.suggest.includeAutomaticOptionalChainCompletions": false,
+  "typescript.workspaceSymbols.scope": "currentProject",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.classMemberSnippets.enabled": false,
+  "typescript.suggest.jsdoc.generateReturns": false,
+  "typescript.suggest.objectLiteralMethodSnippets.enabled": false,
+  "typescript.preferences.useAliasesForRenames": false,
+  "typescript.surveys.enabled": false,
+  "typescript.npm": "npm",
+  "typescript.check.npmIsInstalled": false,
+  "typescript.tsc.autoDetect": "off",
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+  "typescript.suggest.enabled": true,
+  "typescript.diagnostics.ignoredCodes": [71007],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true,
+    "**/.next": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/coverage": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true
   }
+}

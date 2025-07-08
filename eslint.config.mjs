@@ -11,6 +11,12 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      // Suprimir warnings sobre Server Actions para callbacks legítimos
+      "@next/next/no-async-client-component": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

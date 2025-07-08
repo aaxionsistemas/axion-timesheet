@@ -1,16 +1,8 @@
 "use client";
 import React from "react";
-import MetricCard from "../../../components/MetricCard";
-import { Clock, Folder, DollarSign, CalendarCheck } from "lucide-react";
-import PremiumCard from "@/components/PremiumCard";
-import ActiveProjectsCard from "@/components/ActiveProjectsCard";
-import NextPaymentCard from "@/components/NextPaymentCard";
+import { Clock, Folder, DollarSign, CalendarCheck, User, Users } from "lucide-react";
 import WorkedHoursChart from "@/components/WorkedHoursChart";
 import PendingHoursCard from "@/components/PendingHoursCard";
-import AlertsCard from "@/components/AlertsCard";
-import { FileText, FileStack, Server, Sparkles, BarChart2, Globe2, User, Users } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import ConsultantRevenueChart from "@/components/ConsultantRevenueChart";
 import SummaryCard from "@/components/SummaryCard";
 import ActiveProjectsTable from "@/components/ActiveProjectsTable";
@@ -24,51 +16,6 @@ import LatePaymentsCard from "@/components/LatePaymentsCard";
 import AdminAlertsCard from "@/components/AdminAlertsCard";
 
 const userRole = "admin"; // Troque para "consultor" para testar a visão do consultor
-
-// Dados mockados para admin
-const adminData = {
-  receita: 12500,
-  despesas: 3200,
-  saldo: 9300,
-  projetosAtivos: 5,
-  clientesAtivos: 3,
-  horasTrabalhadas: 120,
-  automacao: 98,
-  templates: 18,
-  integracoes: 12,
-  documentos: 245,
-  graficoReceita: [
-    { mes: "Jan", receita: 800 },
-    { mes: "Fev", receita: 1200 },
-    { mes: "Mar", receita: 1500 },
-    { mes: "Abr", receita: 2000 },
-    { mes: "Mai", receita: 2500 },
-    { mes: "Jun", receita: 4500 },
-  ],
-  graficoHoras: [
-    { projeto: "Projeto A", horas: 40 },
-    { projeto: "Projeto B", horas: 30 },
-    { projeto: "Projeto C", horas: 50 },
-  ],
-};
-
-// Dados mockados para consultor
-const consultorData = {
-  projetosAtivos: 2,
-  horasTrabalhadas: 38,
-  tarefasConcluidas: 12,
-  receitaPessoal: 3200,
-  graficoHoras: [
-    { projeto: "Projeto A", horas: 20 },
-    { projeto: "Projeto B", horas: 18 },
-  ],
-  graficoProgresso: [
-    { name: "Concluído", value: 70 },
-    { name: "Restante", value: 30 },
-  ],
-};
-
-const COLORS = ["#3B82F6", "#A855F7", "#60A5FA"];
 
 function DashboardConsultor() {
   return (
