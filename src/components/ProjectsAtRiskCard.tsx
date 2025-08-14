@@ -1,12 +1,49 @@
 import { AlertTriangle, Folder, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { DashboardService } from "@/lib/dashboardService";
 
-const projects = [
-  { name: "API Integração", client: "FinanCorp", status: "Atrasado", reason: "Prazo estourado" },
-  { name: "Implantação ERP", client: "Tech Solutions", status: "Horas estouradas", reason: "Horas acima do previsto" },
-];
+interface ProjectAtRisk {
+  id: string;
+  name: string;
+  client: string;
+  status: string;
+  reason: string;
+}
 
 export default function ProjectsAtRiskCard() {
+  const [projects, setProjects] = useState<ProjectAtRisk[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProjectsAtRisk();
+  }, []);
+
+  const loadProjectsAtRisk = async () => {
+    try {
+      setLoading(true);
+      const projectsData = await DashboardService.getProjectsAtRisk();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Erro ao carregar projetos em risco:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className="bg-[#18181b] border border-[#23232b] shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="text-yellow-400" size={20} />
+            <span className="font-medium text-white text-base">Projetos em Risco</span>
+          </div>
+          <div className="text-center py-8 text-gray-500">Carregando...</div>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="bg-[#18181b] border border-[#23232b] shadow-lg">
       <CardContent className="p-6">

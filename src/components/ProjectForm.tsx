@@ -1,12 +1,15 @@
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CustomDatePicker from "@/components/ui/datepicker";
 import FileUploadArea from "@/components/FileUploadArea";
+import CurrencyInput from "@/components/ui/currency-input";
 import { CreateProjectData, ProjectStatus, ProjectAttachment } from "@/types/project";
+import { CanalService, ConsultantService, ClientService } from "@/lib/adminService";
+import { Canal, Consultant, Client } from "@/types/admin";
 
 const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
@@ -24,6 +27,12 @@ interface ProjectFormProps {
 }
 
 export default function ProjectForm({ onSubmit, initialData, isLoading }: ProjectFormProps) {
+  // Estados para listas do banco
+  const [canals, setCanals] = useState<Canal[]>([]);
+  const [consultants, setConsultants] = useState<Consultant[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
   const [formData, setFormData] = useState<CreateProjectData>({
     canal: initialData?.canal || "",
     cliente: initialData?.cliente || "",
@@ -39,6 +48,58 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
     notes: initialData?.notes || "",
     attachments: initialData?.attachments || [],
   });
+
+  // Carregar dados do banco
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoadingData(true);
+        
+        const [canalsData, consultantsData, clientsData] = await Promise.all([
+          CanalService.getCanals(),
+          ConsultantService.getConsultants(),
+          ClientService.getClients()
+        ]);
+
+        setCanals(canalsData.filter(canal => canal.is_active));
+        setConsultants(consultantsData.filter(consultant => consultant.is_active));
+        setClients(clientsData.filter(client => client.is_active));
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Função para preencher valor hora automaticamente
+  const handleCanalChange = (canalId: string) => {
+    const selectedCanal = canals.find(canal => canal.id === canalId);
+    if (selectedCanal) {
+      setFormData(prev => ({
+        ...prev,
+        canal: canalId,
+        valor_hora_canal: selectedCanal.valor_hora || 0
+      }));
+    } else {
+      handleChange('canal', canalId);
+    }
+  };
+
+  const handleConsultorChange = (consultorId: string) => {
+    const selectedConsultant = consultants.find(consultant => consultant.id === consultorId);
+    if (selectedConsultant) {
+      setFormData(prev => ({
+        ...prev,
+        consultor: consultorId,
+        valor_hora_consultor: selectedConsultant.hourly_rate || 0
+      }));
+    } else {
+      handleChange('consultor', consultorId);
+    }
+  };
 
   const handleChange = (field: keyof CreateProjectData, value: string | number | ProjectStatus | Date | ProjectAttachment[]) => {
     setFormData(prev => ({
@@ -57,26 +118,44 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div>
           <Label htmlFor="canal" className="text-sm font-medium">Canal *</Label>
-          <Input
+          <select
             id="canal"
             value={formData.canal}
-            onChange={(e) => handleChange("canal", e.target.value)}
-            placeholder="Digite o canal"
+            onChange={(e) => handleCanalChange(e.target.value)}
             required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
+            disabled={isLoadingData}
+            className="flex h-11 w-full rounded-md border border-[#23232b] bg-[#23232b] px-3 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600 mt-1"
+          >
+            <option value="">
+              {isLoadingData ? "Carregando canais..." : "Selecione um canal"}
+            </option>
+            {canals.map((canal) => (
+              <option key={canal.id} value={canal.id}>
+                {canal.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
           <Label htmlFor="cliente" className="text-sm font-medium">Cliente *</Label>
-          <Input
+          <select
             id="cliente"
             value={formData.cliente}
             onChange={(e) => handleChange("cliente", e.target.value)}
-            placeholder="Nome do cliente"
             required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
+            disabled={isLoadingData}
+            className="flex h-11 w-full rounded-md border border-[#23232b] bg-[#23232b] px-3 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600 mt-1"
+          >
+            <option value="">
+              {isLoadingData ? "Carregando clientes..." : "Selecione um cliente"}
+            </option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.company || client.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="lg:col-span-2">
@@ -88,6 +167,18 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
             placeholder="Descrição do projeto"
             rows={3}
             className="w-full px-3 py-3 bg-[#23232b] border border-[#23232b] text-white text-base rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-600 resize-vertical placeholder:text-gray-400 mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="produto" className="text-sm font-medium">Produto *</Label>
+          <Input
+            id="produto"
+            value={formData.produto}
+            onChange={(e) => handleChange("produto", e.target.value)}
+            placeholder="Nome do produto"
+            required
+            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
           />
         </div>
 
@@ -107,57 +198,24 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
         </div>
 
         <div>
-          <Label htmlFor="produto" className="text-sm font-medium">Produto *</Label>
-          <Input
-            id="produto"
-            value={formData.produto}
-            onChange={(e) => handleChange("produto", e.target.value)}
-            placeholder="Nome do produto"
-            required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="valor_hora_canal" className="text-sm font-medium">Valor Hora Canal (R$) *</Label>
-          <Input
-            id="valor_hora_canal"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.valor_hora_canal}
-            onChange={(e) => handleChange("valor_hora_canal", parseFloat(e.target.value) || 0)}
-            placeholder="150.00"
-            required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="valor_hora_consultor" className="text-sm font-medium">Valor Hora Consultor (R$) *</Label>
-          <Input
-            id="valor_hora_consultor"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.valor_hora_consultor}
-            onChange={(e) => handleChange("valor_hora_consultor", parseFloat(e.target.value) || 0)}
-            placeholder="120.00"
-            required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
-        </div>
-
-        <div>
           <Label htmlFor="consultor" className="text-sm font-medium">Consultor *</Label>
-          <Input
+          <select
             id="consultor"
             value={formData.consultor}
-            onChange={(e) => handleChange("consultor", e.target.value)}
-            placeholder="Nome do consultor"
+            onChange={(e) => handleConsultorChange(e.target.value)}
             required
-            className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-          />
+            disabled={isLoadingData}
+            className="flex h-11 w-full rounded-md border border-[#23232b] bg-[#23232b] px-3 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600 mt-1"
+          >
+            <option value="">
+              {isLoadingData ? "Carregando consultores..." : "Selecione um consultor"}
+            </option>
+            {consultants.map((consultant) => (
+              <option key={consultant.id} value={consultant.id}>
+                {consultant.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -172,6 +230,32 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
             placeholder="40"
             className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
           />
+        </div>
+
+        <div>
+          <Label htmlFor="valor_hora_canal" className="text-sm font-medium">Valor Hora Canal *</Label>
+          <div className="mt-1">
+            <CurrencyInput
+              id="valor_hora_canal"
+              value={formData.valor_hora_canal}
+              onChange={(value) => handleChange("valor_hora_canal", value)}
+              className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
+              placeholder="R$ 0,00"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="valor_hora_consultor" className="text-sm font-medium">Valor Hora Consultor *</Label>
+          <div className="mt-1">
+            <CurrencyInput
+              id="valor_hora_consultor"
+              value={formData.valor_hora_consultor}
+              onChange={(value) => handleChange("valor_hora_consultor", value)}
+              className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
+              placeholder="R$ 0,00"
+            />
+          </div>
         </div>
 
         <div>

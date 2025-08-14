@@ -39,8 +39,8 @@ export default function Modal({ isOpen, onClose, title, children, size = "md" }:
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative bg-[#18181b] border border-[#23232b] rounded-xl shadow-2xl w-full mx-4 ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
-        <div className="flex items-center justify-between p-6 border-b border-[#23232b]">
+      <div className={`relative bg-[#18181b] border border-[#23232b] rounded-xl shadow-2xl w-full mx-4 ${sizeClasses[size]} max-h-[95vh] flex flex-col`}>
+        <div className="flex items-center justify-between p-6 border-b border-[#23232b] flex-shrink-0">
           <h2 className="text-xl font-semibold text-white">{title}</h2>
           <button
             onClick={onClose}
@@ -49,7 +49,7 @@ export default function Modal({ isOpen, onClose, title, children, size = "md" }:
             <X size={20} />
           </button>
         </div>
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className="overflow-y-auto flex-1">
           {children}
         </div>
       </div>

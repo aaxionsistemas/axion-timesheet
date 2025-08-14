@@ -1,5 +1,5 @@
 "use client";
-import { Home, Clock, Folder, BarChart2, DollarSign, LogOut } from "lucide-react";
+import { Home, Clock, Folder, BarChart2, DollarSign, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { href: "/projects", label: "Projetos", icon: Folder },
   { href: "/reports", label: "Relatórios", icon: BarChart2 },
   { href: "/financial", label: "Financeiro", icon: DollarSign },
+  { href: "/admin", label: "Administração", icon: Settings },
 ];
 
 export default function Sidebar() {

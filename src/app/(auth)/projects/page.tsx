@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, FolderOpen } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import ProjectForm from "@/components/ProjectForm";
@@ -9,213 +9,64 @@ import ProjectStats from "@/components/ProjectStats";
 import AttachmentModal from "@/components/AttachmentModal";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { Project, CreateProjectData, ProjectAttachment } from "@/types/project";
-
-// Dados mockados para demonstração
-const mockProjects: Project[] = [
-  {
-    id: "1",
-    canal: "Direto",
-    cliente: "Tech Solutions Ltda",
-    descricao: "Implantação de sistema ERP completo para gestão empresarial",
-    status: "em_andamento",
-    produto: "ERP Enterprise",
-    valor_hora_canal: 200,
-    valor_hora_consultor: 150,
-    consultor: "João Silva",
-    estimated_hours: 120,
-    worked_hours: 85,
-    start_date: "2024-01-15",
-    end_date: "2024-03-15",
-    created_at: "2024-01-15T00:00:00Z",
-    updated_at: "2024-02-20T00:00:00Z",
-    notes: "Cliente muito exigente, atenção aos detalhes",
-    attachments: [
-      {
-        id: "att1",
-        project_id: "1",
-        name: "Proposta_Comercial.pdf",
-        file_url: "/uploads/proposta1.pdf",
-        file_size: 2048000,
-        mime_type: "application/pdf",
-        uploaded_at: "2024-01-15T00:00:00Z"
-      }
-    ]
-  },
-  {
-    id: "2",
-    canal: "Parceiro",
-    cliente: "FinanCorp",
-    descricao: "Desenvolvimento de API para integração com bancos",
-    status: "aguardando_cliente",
-    produto: "API Banking",
-    valor_hora_canal: 220,
-    valor_hora_consultor: 180,
-    consultor: "Maria Santos",
-    estimated_hours: 80,
-    worked_hours: 75,
-    start_date: "2024-02-01",
-    end_date: "2024-02-28",
-    created_at: "2024-02-01T00:00:00Z",
-    updated_at: "2024-02-25T00:00:00Z",
-    attachments: []
-  },
-  {
-    id: "3",
-    canal: "Direto",
-    cliente: "DataX Analytics",
-    descricao: "Painel de controle com relatórios e gráficos",
-    status: "concluido",
-    produto: "Dashboard BI",
-    valor_hora_canal: 180,
-    valor_hora_consultor: 140,
-    consultor: "Pedro Costa",
-    estimated_hours: 60,
-    worked_hours: 60,
-    start_date: "2024-01-01",
-    end_date: "2024-01-31",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-31T00:00:00Z",
-    attachments: [
-      {
-        id: "att2",
-        project_id: "3",
-        name: "Especificacao_Tecnica.docx",
-        file_url: "/uploads/spec.docx",
-        file_size: 1024000,
-        mime_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        uploaded_at: "2024-01-01T00:00:00Z"
-      },
-      {
-        id: "att3",
-        project_id: "3",
-        name: "Manual_Usuario.pdf",
-        file_url: "/uploads/manual.pdf",
-        file_size: 3072000,
-        mime_type: "application/pdf",
-        uploaded_at: "2024-01-31T00:00:00Z"
-      }
-    ]
-  },
-  {
-    id: "4",
-    canal: "Parceiro",
-    cliente: "Loja Virtual SA",
-    descricao: "E-commerce completo com painel administrativo",
-    status: "planejamento",
-    produto: "E-commerce Platform",
-    valor_hora_canal: 250,
-    valor_hora_consultor: 160,
-    consultor: "Ana Oliveira",
-    estimated_hours: 200,
-    worked_hours: 45,
-    start_date: "2024-03-01",
-    end_date: "2024-05-31",
-    created_at: "2024-02-15T00:00:00Z",
-    updated_at: "2024-02-28T00:00:00Z",
-    attachments: []
-  },
-  {
-    id: "5",
-    canal: "Direto",
-    cliente: "HealthTech Medical",
-    descricao: "Sistema de gestão hospitalar com prontuário eletrônico",
-    status: "em_andamento",
-    produto: "Sistema Hospitalar",
-    valor_hora_canal: 300,
-    valor_hora_consultor: 220,
-    consultor: "Dr. Carlos Mendes",
-    estimated_hours: 300,
-    worked_hours: 120,
-    start_date: "2024-02-10",
-    end_date: "2024-06-30",
-    created_at: "2024-02-10T00:00:00Z",
-    updated_at: "2024-02-28T00:00:00Z",
-    notes: "Projeto crítico - Compliance LGPD obrigatório",
-    attachments: [
-      {
-        id: "att4",
-        project_id: "5",
-        name: "LGPD_Compliance.pdf",
-        file_url: "/uploads/lgpd.pdf",
-        file_size: 1536000,
-        mime_type: "application/pdf",
-        uploaded_at: "2024-02-10T00:00:00Z"
-      },
-      {
-        id: "att5",
-        project_id: "5",
-        name: "Arquitetura_Sistema.pptx",
-        file_url: "/uploads/arquitetura.pptx",
-        file_size: 5120000,
-        mime_type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        uploaded_at: "2024-02-15T00:00:00Z"
-      }
-    ]
-  },
-  {
-    id: "6",
-    canal: "Parceiro",
-    cliente: "EduTech Solutions",
-    descricao: "Plataforma de ensino à distância com gamificação",
-    status: "pausado",
-    produto: "LMS Gamificado",
-    valor_hora_canal: 180,
-    valor_hora_consultor: 130,
-    consultor: "Sofia Rodriguez",
-    estimated_hours: 150,
-    worked_hours: 90,
-    start_date: "2024-01-20",
-    end_date: "2024-04-20",
-    created_at: "2024-01-20T00:00:00Z",
-    updated_at: "2024-02-25T00:00:00Z",
-    notes: "Projeto pausado - aguardando definições de gamificação do cliente",
-    attachments: [
-      {
-        id: "att6",
-        project_id: "6",
-        name: "Wireframes_v2.fig",
-        file_url: "/uploads/wireframes.fig",
-        file_size: 2560000,
-        mime_type: "application/octet-stream",
-        uploaded_at: "2024-01-25T00:00:00Z"
-      }
-    ]
-  }
-];
+import { ProjectService } from "@/lib/projectService";
 
 function ProjectsPageContent() {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // Modal de visualização removido - agora usa página de detalhes
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { addToast } = useToast();
+
+  // Carregar projetos ao montar o componente
+  useEffect(() => {
+    loadProjects();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadProjects = async () => {
+    try {
+      setIsInitialLoading(true);
+      const projectsData = await ProjectService.getProjects();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Erro ao carregar projetos:', error);
+      addToast({
+        type: 'error',
+        title: 'Erro ao carregar projetos',
+        message: error instanceof Error ? error.message : 'Erro desconhecido ao carregar projetos'
+      });
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
 
   const handleCreateProject = async (data: CreateProjectData) => {
     setIsLoading(true);
     
-    // Simular API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newProject: Project = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-      worked_hours: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    
-    setProjects(prev => [...prev, newProject]);
-    setIsCreateModalOpen(false);
-    setIsLoading(false);
-    
-    addToast({
-      type: 'success',
-      title: 'Projeto criado!',
-      message: `O projeto para ${data.cliente} foi criado com sucesso.`
-    });
+    try {
+      const newProject = await ProjectService.createProject(data);
+      setProjects(prev => [...prev, newProject]);
+      setIsCreateModalOpen(false);
+      
+      addToast({
+        type: 'success',
+        title: 'Projeto criado!',
+        message: `O projeto para ${data.cliente} foi criado com sucesso.`
+      });
+    } catch (error) {
+      console.error('Erro ao criar projeto:', error);
+      addToast({
+        type: 'error',
+        title: 'Erro ao criar projeto',
+        message: error instanceof Error ? error.message : 'Erro desconhecido ao criar projeto'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditProject = async (data: CreateProjectData) => {
@@ -223,25 +74,31 @@ function ProjectsPageContent() {
     
     setIsLoading(true);
     
-    // Simular API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const updatedProject: Project = {
-      ...selectedProject,
-      ...data,
-      updated_at: new Date().toISOString(),
-    };
-    
-    setProjects(prev => prev.map(p => p.id === selectedProject.id ? updatedProject : p));
-    setIsEditModalOpen(false);
-    setSelectedProject(null);
-    setIsLoading(false);
-    
-    addToast({
-      type: 'success',
-      title: 'Projeto atualizado!',
-      message: `As alterações do projeto ${selectedProject.cliente} foram salvas.`
-    });
+    try {
+      const updatedProject = await ProjectService.updateProject({
+        id: selectedProject.id,
+        ...data
+      });
+      
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? updatedProject : p));
+      setIsEditModalOpen(false);
+      setSelectedProject(null);
+      
+      addToast({
+        type: 'success',
+        title: 'Projeto atualizado!',
+        message: `As alterações do projeto ${selectedProject.cliente} foram salvas.`
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error);
+      addToast({
+        type: 'error',
+        title: 'Erro ao atualizar projeto',
+        message: error instanceof Error ? error.message : 'Erro desconhecido ao atualizar projeto'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteProject = async (projectId: string) => {
@@ -249,18 +106,26 @@ function ProjectsPageContent() {
     
     setIsLoading(true);
     
-    // Simular API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const deletedProject = projects.find(p => p.id === projectId);
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-    setIsLoading(false);
-    
-    addToast({
-      type: 'success',
-      title: 'Projeto excluído!',
-      message: `O projeto ${deletedProject?.cliente || ''} foi removido com sucesso.`
-    });
+    try {
+      const deletedProject = projects.find(p => p.id === projectId);
+      await ProjectService.deleteProject(projectId);
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      
+      addToast({
+        type: 'success',
+        title: 'Projeto excluído!',
+        message: `O projeto ${deletedProject?.cliente || ''} foi removido com sucesso.`
+      });
+    } catch (error) {
+      console.error('Erro ao excluir projeto:', error);
+      addToast({
+        type: 'error',
+        title: 'Erro ao excluir projeto',
+        message: error instanceof Error ? error.message : 'Erro desconhecido ao excluir projeto'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Navegação para detalhes agora é feita diretamente no ProjectList
@@ -311,13 +176,19 @@ function ProjectsPageContent() {
 
       <ProjectStats projects={projects} />
 
-      <ProjectList
-        projects={projects}
-        onEdit={handleEditClick}
-        onDelete={handleDeleteProject}
-        onAttachment={handleAttachmentClick}
-        isLoading={isLoading}
-      />
+      {isInitialLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">Carregando projetos...</div>
+        </div>
+      ) : (
+        <ProjectList
+          projects={projects}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteProject}
+          onAttachment={handleAttachmentClick}
+          isLoading={isLoading}
+        />
+      )}
 
       {/* Modal de Criação */}
       <Modal

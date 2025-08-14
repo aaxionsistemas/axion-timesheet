@@ -50,7 +50,7 @@ export default function FileUploadArea({
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const newAttachments: ProjectAttachment[] = Array.from(files).map((file, index) => ({
-      id: `att_${Date.now()}_${index}`,
+      id: `att_${crypto.randomUUID()}_${index}`,
       project_id: '',
       name: file.name,
       file_url: `/uploads/${file.name}`,

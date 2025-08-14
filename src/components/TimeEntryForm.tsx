@@ -24,7 +24,7 @@ export default function TimeEntryForm({
     demand_id: demandId,
     hours: 0,
     description: "",
-    date: new Date().toISOString().split('T')[0], // today's date
+    date: new Date().toISOString().split('T')[0],
   });
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -134,8 +134,9 @@ export default function ProjectTasks({ projectId, consultant }: ProjectTasksProp
   });
 
   const handleCreateTask = (taskData: Partial<ProjectTask>) => {
+    const now = new Date().toISOString();
     const newTask: ProjectTask = {
-      id: `task_${Date.now()}`,
+      id: `task_${crypto.randomUUID()}`,
       project_id: projectId,
       title: taskData.title || '',
       description: taskData.description,
@@ -145,8 +146,8 @@ export default function ProjectTasks({ projectId, consultant }: ProjectTasksProp
       estimated_hours: taskData.estimated_hours,
       worked_hours: 0,
       due_date: taskData.due_date,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: now,
+      updated_at: now
     };
 
     setTasks([...tasks, newTask]);
