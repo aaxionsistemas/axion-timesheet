@@ -1,5 +1,5 @@
 "use client";
-import { Home, Clock, Folder, BarChart2, DollarSign, LogOut, Settings, X } from "lucide-react";
+import { Home, Clock, Folder, BarChart2, DollarSign, Settings, X } from "lucide-react";
 import Link from "next/link";
 
 const navItems = [

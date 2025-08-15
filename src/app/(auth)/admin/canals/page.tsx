@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,21 +10,20 @@ import {
   Search, 
   Edit,
   Trash2,
-  Calendar,
   Mail,
   Phone,
   User,
-  MoreVertical,
   TrendingUp,
   DollarSign,
   FolderOpen
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// Imports não utilizados comentados
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { Canal, CanalType } from "@/types/admin";
 import { CanalService } from "@/lib/adminService";
 import CanalFormModal from "@/components/CanalFormModal";
@@ -128,7 +127,8 @@ export default function CanalsPage() {
     return `Dia ${day}`;
   };
 
-  const averageValorHora = canals.length > 0 ? canals.reduce((sum, c) => sum + c.valor_hora, 0) / canals.length : 0;
+  // Variável não utilizada atualmente
+  // const averageValorHora = canals.length > 0 ? canals.reduce((sum, c) => sum + c.valor_hora, 0) / canals.length : 0;
 
   return (
     <div className="p-6 space-y-8">
@@ -278,7 +278,7 @@ export default function CanalsPage() {
                       <div className="text-foreground/60">
                         <Activity size={48} className="mx-auto mb-4 opacity-50" />
                         <p className="text-lg mb-2">Nenhum canal encontrado</p>
-                        <p className="text-sm">Crie seu primeiro canal clicando no botão "Novo Canal"</p>
+                        <p className="text-sm">Crie seu primeiro canal clicando no botão &quot;Novo Canal&quot;</p>
                       </div>
                     </td>
                   </tr>

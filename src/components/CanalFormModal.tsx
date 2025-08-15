@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
@@ -124,7 +124,7 @@ export default function CanalFormModal({
     }
   };
 
-  const handleChange = (field: keyof CreateCanalData, value: any) => {
+  const handleChange = (field: keyof CreateCanalData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -217,7 +217,7 @@ export default function CanalFormModal({
               <div className="mt-1">
                 <PhoneInput
                   id="contact_phone"
-                  value={formData.contact_phone}
+                  value={formData.contact_phone || ''}
                   onChange={(value) => handleChange('contact_phone', value)}
                   className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
                   placeholder="(11) 99999-9999"
@@ -294,7 +294,7 @@ export default function CanalFormModal({
             <DayInput
               id="data_apontamento"
               label="Dia do Apontamento"
-              value={formData.data_apontamento}
+              value={formData.data_apontamento || ''}
               onChange={(value) => handleChange('data_apontamento', value)}
               className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
             />
@@ -302,7 +302,7 @@ export default function CanalFormModal({
             <DayInput
               id="data_faturamento"
               label="Dia do Faturamento"
-              value={formData.data_faturamento}
+              value={formData.data_faturamento || ''}
               onChange={(value) => handleChange('data_faturamento', value)}
               className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
             />
@@ -310,7 +310,7 @@ export default function CanalFormModal({
             <DayInput
               id="data_pagamento"
               label="Dia do Pagamento"
-              value={formData.data_pagamento}
+              value={formData.data_pagamento || ''}
               onChange={(value) => handleChange('data_pagamento', value)}
               className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
             />

@@ -36,9 +36,10 @@ export default function PhoneInput({
     }
   };
 
-  const unformatPhone = (formattedPhone: string): string => {
-    return formattedPhone.replace(/\D/g, '');
-  };
+  // Função para remover formatação (não utilizada atualmente, mas pode ser útil para futuras funcionalidades)
+  // const unformatPhone = (formattedPhone: string): string => {
+  //   return formattedPhone.replace(/\D/g, '');
+  // };
 
   useEffect(() => {
     if (value) {

@@ -53,7 +53,7 @@ export default function PixInput({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let inputValue = e.target.value;
+    const inputValue = e.target.value;
     
     // Aplica formatação e limitação baseada no tipo selecionado
     let formattedValue = inputValue;
@@ -148,7 +148,7 @@ export default function PixInput({
     if (value !== displayValue) {
       setDisplayValue(value);
     }
-  }, [value]);
+  }, [value, displayValue]);
 
   return (
     <div className="space-y-2">

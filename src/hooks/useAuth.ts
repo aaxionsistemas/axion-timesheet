@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
 
 interface AuthUser extends User {
-  user_metadata?: {
+  user_metadata: {
     role?: 'admin' | 'consultant';
     name?: string;
-  };
+  } & Record<string, unknown>;
 }
 
 interface UserProfile {
@@ -19,7 +18,6 @@ interface UserProfile {
 }
 
 export function useAuth() {
-  const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);

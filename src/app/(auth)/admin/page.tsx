@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
 import { 
   Users, 
   UserCheck, 
@@ -26,7 +26,7 @@ export default function AdminPage() {
     total_clients: 0,
     active_clients: 0,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadStats();
@@ -40,7 +40,7 @@ export default function AdminPage() {
       console.error('Erro ao carregar estatísticas:', error);
       // Manter valores padrão em caso de erro
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 

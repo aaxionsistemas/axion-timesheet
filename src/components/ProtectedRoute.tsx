@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Shield, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+// import { supabase } from '@/lib/supabaseClient';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

@@ -131,18 +131,18 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
     }
   };
 
-  const handleConsultorChange = (consultorId: string) => {
-    const selectedConsultant = consultants.find(consultant => consultant.id === consultorId);
-    if (selectedConsultant) {
-      setFormData(prev => ({
-        ...prev,
-        consultor: consultorId,
-        valor_hora_consultor: selectedConsultant.hourly_rate || 0
-      }));
-    } else {
-      handleChange('consultor', consultorId);
-    }
-  };
+  // const handleConsultorChange = (consultorId: string) => {
+  //   const selectedConsultant = consultants.find(consultant => consultant.id === consultorId);
+  //   if (selectedConsultant) {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       consultor: consultorId,
+  //       valor_hora_consultor: selectedConsultant.hourly_rate || 0
+  //     }));
+  //   } else {
+  //     handleChange('consultor', consultorId);
+  //   }
+  // };
 
   const handleChange = (field: keyof CreateProjectData, value: string | number | ProjectStatus | Date | ProjectAttachment[] | ProjectConsultant[]) => {
     setFormData(prev => ({

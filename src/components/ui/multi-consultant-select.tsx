@@ -71,7 +71,7 @@ export default function MultiConsultantSelect({
       
       {/* Lista de consultores selecionados */}
       <div className="space-y-3 mt-2">
-        {consultants.map((consultant, index) => (
+        {consultants.map((consultant) => (
           <div key={consultant.consultant_id} className="flex items-center gap-3 p-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg">
             <div className="flex-1">
               <p className="text-white text-sm font-medium">

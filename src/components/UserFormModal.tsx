@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
-import { User, UserWithConsultant, CreateUserData, CreateUserWithConsultantData, UpdateUserData, UserRole } from "@/types/admin";
+import { UserWithConsultant, CreateUserData, CreateUserWithConsultantData, UpdateUserData, UserRole } from "@/types/admin";
 import { UserService } from "@/lib/adminService";
 import CurrencyInput from "@/components/ui/currency-input";
 import PhoneInputMasked from "@/components/ui/phone-input-masked";
@@ -157,7 +157,7 @@ export default function UserFormModal({
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -229,7 +229,7 @@ export default function UserFormModal({
                 <div className="mt-1">
                   <PhoneInputMasked
                     id="phone"
-                    value={formData.phone}
+                    value={formData.phone || ''}
                     onChange={(value) => handleChange('phone', value)}
                     className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
                     placeholder="(11) 99999-9999"

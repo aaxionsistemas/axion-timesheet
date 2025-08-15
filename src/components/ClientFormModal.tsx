@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
@@ -106,7 +106,7 @@ export default function ClientFormModal({
     }
   };
 
-  const handleChange = (field: keyof CreateClientData, value: any) => {
+  const handleChange = (field: keyof CreateClientData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

@@ -34,6 +34,7 @@ const mockProject: Project = {
   valor_hora_canal: 180.00,
   valor_hora_consultor: 120.00,
   consultor: 'Ana Silva',
+  consultants: [], // Campo obrigatório adicionado
   estimated_hours: 120,
   worked_hours: 45,
   start_date: '2024-01-15',

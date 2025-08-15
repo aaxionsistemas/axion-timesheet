@@ -308,7 +308,7 @@ export class ProjectService {
         throw new Error(`Erro ao buscar projetos por status: ${error.message}`);
       }
 
-      return data?.map(mapDatabaseToProject) || [];
+      return data ? await Promise.all(data.map(mapDatabaseToProject)) : [];
     } catch (error) {
       console.error('Erro no serviço de projetos por status:', error);
       throw error;

@@ -80,7 +80,7 @@ export default function CurrencyInput({
     onChange(numericValue);
   };
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = () => {
     // Se estiver vazio, não faz nada
     if (displayValue === '') return;
     
@@ -89,7 +89,7 @@ export default function CurrencyInput({
     setDisplayValue(numericOnly);
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = () => {
     // Se estiver vazio, mantém vazio
     if (displayValue === '') return;
     

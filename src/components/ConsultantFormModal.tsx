@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
@@ -94,7 +94,7 @@ export default function ConsultantFormModal({
     }
   };
 
-  const handleChange = (field: keyof CreateConsultantData, value: any) => {
+  const handleChange = (field: keyof CreateConsultantData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

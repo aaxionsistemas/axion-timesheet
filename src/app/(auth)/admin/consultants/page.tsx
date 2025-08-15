@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -13,20 +13,20 @@ import {
   Calendar,
   DollarSign,
   Star,
-  MoreVertical,
-  Briefcase,
+  // MoreVertical,
+  // Briefcase,
   FolderOpen
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { Consultant } from "@/types/admin";
 import ConsultantFormModal from "@/components/ConsultantFormModal";
 import UserFormModal from "@/components/UserFormModal";
-import { ConsultantService, UserService } from "@/lib/adminService";
+import { ConsultantService } from "@/lib/adminService";
 import { ToastProvider, useToast } from "@/components/ui/toast-provider";
 
 // Mock data - será substituído pelo serviço real
@@ -74,7 +74,7 @@ function ConsultantsPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   
   // Estados para o modal de criação de usuário consultor
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -82,7 +82,7 @@ function ConsultantsPageContent() {
   // Carregar consultores do Supabase
   const loadConsultants = async () => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       const data = await ConsultantService.getConsultants();
       setConsultants(data);
     } catch (error) {
@@ -90,7 +90,7 @@ function ConsultantsPageContent() {
       // Em caso de erro, usar dados mock como fallback
       setConsultants(mockConsultants);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 

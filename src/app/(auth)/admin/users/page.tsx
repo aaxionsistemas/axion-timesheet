@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,17 +15,17 @@ import {
   Mail,
   Phone,
   Calendar,
-  MoreVertical,
+  // MoreVertical,
   FolderOpen,
   Eye,
   Crown
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { User as UserType, UserWithConsultant, UserRole } from "@/types/admin";
 import UserFormModal from "@/components/UserFormModal";
 import { UserService } from "@/lib/adminService";
@@ -94,12 +94,12 @@ function UsersPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithConsultant | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   // Carregar usuários do Supabase
   const loadUsers = async () => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       const data = await UserService.getUsersWithConsultantInfo();
       setUsers(data);
     } catch (error) {
@@ -107,7 +107,7 @@ function UsersPageContent() {
       // Em caso de erro, usar dados mock como fallback
       setUsers(mockUsers);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
