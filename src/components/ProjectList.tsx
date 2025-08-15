@@ -33,6 +33,62 @@ interface ProjectListProps {
   isLoading?: boolean;
 }
 
+const renderConsultants = (project: Project, maxVisible: number = 2) => {
+  // Usar o novo array de consultants se existir, senão usar o campo antigo
+  const consultants = project.consultants?.length > 0 
+    ? project.consultants 
+    : project.consultor 
+      ? [{ consultant_id: '', consultant_name: project.consultor, hourly_rate: project.valor_hora_consultor }]
+      : [];
+
+  if (consultants.length === 0) {
+    return <span className="text-gray-400 text-sm">Nenhum consultor</span>;
+  }
+
+  const visible = consultants.slice(0, maxVisible);
+  const remaining = consultants.length - maxVisible;
+
+  return (
+    <div className="space-y-1">
+      {visible.map((consultant, index) => (
+        <div key={`${consultant.consultant_id}-${index}`} className="text-white text-sm">
+          {consultant.consultant_name}
+        </div>
+      ))}
+      {remaining > 0 && (
+        <div className="text-gray-400 text-xs">
+          +{remaining} mais
+        </div>
+      )}
+    </div>
+  );
+};
+
+const getConsultantHourlyRates = (project: Project) => {
+  // Usar o novo array de consultants se existir, senão usar o campo antigo
+  const consultants = project.consultants?.length > 0 
+    ? project.consultants 
+    : project.consultor 
+      ? [{ consultant_id: '', consultant_name: project.consultor, hourly_rate: project.valor_hora_consultor }]
+      : [];
+
+  if (consultants.length === 0) {
+    return { min: 0, max: 0, display: formatCurrency(0) };
+  }
+
+  const rates = consultants.map(c => c.hourly_rate);
+  const min = Math.min(...rates);
+  const max = Math.max(...rates);
+
+  // Se todos têm o mesmo valor, mostrar apenas um
+  if (min === max) {
+    return { min, max, display: formatCurrency(max) };
+  }
+
+  // Se valores diferentes, mostrar formato "menor / maior"
+  return { min, max, display: `${formatCurrency(min)} / ${formatCurrency(max)}` };
+};
+
 export default function ProjectList({ projects, onEdit, onDelete, onAttachment, isLoading }: ProjectListProps) {
   const router = useRouter();
   const [filters, setFilters] = useState<ProjectFilters>({});
@@ -41,8 +97,8 @@ export default function ProjectList({ projects, onEdit, onDelete, onAttachment, 
   const filteredProjects = projects.filter(project => {
     if (filters.search) {
       const search = filters.search.toLowerCase();
-      if (!project.canal.toLowerCase().includes(search) && 
-          !project.cliente.toLowerCase().includes(search) &&
+      if (!(project.canal_name || project.canal).toLowerCase().includes(search) && 
+          !(project.cliente_name || project.cliente).toLowerCase().includes(search) &&
           !project.produto.toLowerCase().includes(search) &&
           !project.consultor.toLowerCase().includes(search)) {
         return false;
@@ -165,32 +221,32 @@ export default function ProjectList({ projects, onEdit, onDelete, onAttachment, 
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-gray-400 border-b border-[#23232b]">
-                      <th className="py-3 px-4 text-left font-medium">Canal</th>
-                      <th className="py-3 px-4 text-left font-medium">Cliente</th>
-                      <th className="py-3 px-4 text-left font-medium">Descrição</th>
-                      <th className="py-3 px-4 text-left font-medium">Status</th>
-                      <th className="py-3 px-4 text-left font-medium">Produto</th>
-                      <th className="py-3 px-4 text-left font-medium">Valor Hora Canal</th>
-                      <th className="py-3 px-4 text-left font-medium">Valor Hora Consultor</th>
-                      <th className="py-3 px-4 text-left font-medium">Consultor / Progresso</th>
-                      <th className="py-3 px-4 text-left font-medium">Anexos</th>
-                      <th className="py-3 px-4 text-left font-medium">Ações</th>
+                                             <th className="py-3 px-4 text-left font-medium">Canal</th>
+                       <th className="py-3 px-4 text-left font-medium">Cliente</th>
+                       <th className="py-3 px-4 text-left font-medium">Descrição</th>
+                       <th className="py-3 px-4 text-left font-medium">Status</th>
+                       <th className="py-3 px-4 text-left font-medium">Produto</th>
+                       <th className="py-3 px-4 text-left font-medium">Valor Hora Canal</th>
+                       <th className="py-3 px-4 text-left font-medium">Valor Hora Consultor</th>
+                       <th className="py-3 px-4 text-left font-medium">Consultores</th>
+                       <th className="py-3 px-4 text-left font-medium">Anexos</th>
+                       <th className="py-3 px-4 text-left font-medium">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredProjects.map((project) => (
                       <tr key={project.id} className="border-b border-[#23232b] hover:bg-[#23232b]/60 transition-all">
                         <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FolderOpen className="text-blue-400" size={16} />
-                            <span className="font-medium text-white">{project.canal}</span>
-                          </div>
+                                                     <div className="flex items-center gap-2">
+                             <FolderOpen className="text-blue-400" size={16} />
+                             <span className="font-medium text-white">{project.canal_name || project.canal}</span>
+                           </div>
                         </td>
                         
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1">
                             <User size={14} className="text-blue-400" />
-                            <span className="text-white">{project.cliente}</span>
+                            <span className="text-white">{project.cliente_name || project.cliente}</span>
                           </div>
                         </td>
                         
@@ -216,38 +272,23 @@ export default function ProjectList({ projects, onEdit, onDelete, onAttachment, 
                           <span className="text-white">{project.produto}</span>
                         </td>
                         
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1">
-                            <DollarSign size={14} className="text-green-400" />
-                            <span className="text-white">{formatCurrency(project.valor_hora_canal)}</span>
-                          </div>
-                        </td>
-                        
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1">
-                            <TrendingUp size={14} className="text-green-400" />
-                            <span className="text-white">{formatCurrency(project.valor_hora_consultor)}</span>
-                          </div>
-                        </td>
-                        
-                        <td className="py-3 px-4">
-                          <span className="text-white">{project.consultor}</span>
-                          {project.estimated_hours && project.worked_hours && (
-                            <div className="mt-1">
-                              <div className="w-full bg-gray-700 rounded-full h-1.5">
-                                <div 
-                                  className="bg-blue-500 h-1.5 rounded-full transition-all"
-                                  style={{ 
-                                    width: `${Math.min((project.worked_hours / project.estimated_hours) * 100, 100)}%` 
-                                  }}
-                                ></div>
-                              </div>
-                              <div className="text-xs text-gray-400 mt-1">
-                                {project.worked_hours}h / {project.estimated_hours}h
-                              </div>
-                            </div>
-                          )}
-                        </td>
+                                                 <td className="py-3 px-4">
+                           <div className="flex items-center gap-1">
+                             <DollarSign size={14} className="text-green-400" />
+                             <span className="text-white">{formatCurrency(project.valor_hora_canal)}</span>
+                           </div>
+                         </td>
+                         
+                         <td className="py-3 px-4">
+                           <div className="flex items-center gap-1">
+                             <TrendingUp size={14} className="text-green-400" />
+                             <span className="text-white">{getConsultantHourlyRates(project).display}</span>
+                           </div>
+                         </td>
+                         
+                         <td className="py-3 px-4">
+                           {renderConsultants(project, 3)}
+                         </td>
                         
                         <td className="py-3 px-4">
                           <button
@@ -306,10 +347,10 @@ export default function ProjectList({ projects, onEdit, onDelete, onAttachment, 
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <FolderOpen className="text-blue-400 flex-shrink-0" size={16} />
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium text-white text-sm truncate">{project.canal}</h3>
-                            <p className="text-xs text-gray-400 truncate">{project.cliente}</p>
-                          </div>
+                                                     <div className="min-w-0 flex-1">
+                             <h3 className="font-medium text-white text-sm truncate">{project.canal_name || project.canal}</h3>
+                             <p className="text-xs text-gray-400 truncate">{project.cliente_name || project.cliente}</p>
+                           </div>
                         </div>
                         <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
                           {statusLabels[project.status]}
@@ -322,23 +363,23 @@ export default function ProjectList({ projects, onEdit, onDelete, onAttachment, 
                           <span className="text-gray-400">Produto:</span>
                           <span className="text-white font-medium truncate ml-2">{project.produto}</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Consultor:</span>
-                          <span className="text-white truncate ml-2">{project.consultor}</span>
+                        <div className="space-y-1">
+                          <span className="text-gray-400 text-sm">Consultores:</span>
+                          {renderConsultants(project, 2)}
                         </div>
                       </div>
 
-                      {/* Valores */}
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <div className="text-gray-400 text-xs">Valor/h Canal</div>
-                          <div className="text-green-400 font-medium">{formatCurrency(project.valor_hora_canal)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-400 text-xs">Valor/h Consultor</div>
-                          <div className="text-green-400 font-medium">{formatCurrency(project.valor_hora_consultor)}</div>
-                        </div>
-                      </div>
+                                             {/* Valores */}
+                       <div className="grid grid-cols-2 gap-3 text-sm">
+                         <div>
+                           <div className="text-gray-400 text-xs">Valor/h Canal</div>
+                           <div className="text-green-400 font-medium">{formatCurrency(project.valor_hora_canal)}</div>
+                         </div>
+                         <div>
+                           <div className="text-gray-400 text-xs">Valor/h Consultor</div>
+                           <div className="text-green-400 font-medium">{getConsultantHourlyRates(project).display}</div>
+                         </div>
+                       </div>
 
                       {/* Progresso */}
                       {project.estimated_hours && project.worked_hours && (

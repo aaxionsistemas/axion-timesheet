@@ -1,13 +1,22 @@
+export interface ProjectConsultant {
+  consultant_id: string;
+  consultant_name?: string;
+  hourly_rate: number;
+}
+
 export interface Project {
   id: string;
-  canal: string;
-  cliente: string;
+  canal: string; // ID do canal para formulários
+  cliente: string; // ID do cliente para formulários
+  canal_name?: string; // Nome do canal para exibição
+  cliente_name?: string; // Nome do cliente para exibição
   descricao?: string;
   status: ProjectStatus;
   produto: string;
   valor_hora_canal: number;
-  valor_hora_consultor: number;
-  consultor: string;
+  valor_hora_consultor: number; // Mantido para compatibilidade, mas será deprecated
+  consultor: string; // Mantido para compatibilidade, mas será deprecated
+  consultants: ProjectConsultant[]; // Novo campo para múltiplos consultores
   estimated_hours?: number;
   worked_hours?: number;
   start_date?: string;
@@ -90,8 +99,9 @@ export interface CreateProjectData {
   status: ProjectStatus;
   produto: string;
   valor_hora_canal: number;
-  valor_hora_consultor: number;
-  consultor: string;
+  valor_hora_consultor: number; // Mantido para compatibilidade
+  consultor: string; // Mantido para compatibilidade
+  consultants: ProjectConsultant[]; // Novo campo para múltiplos consultores
   estimated_hours?: number;
   start_date?: string;
   end_date?: string;

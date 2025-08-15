@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { CanalService } from "@/lib/adminService";
 import { Plus, X } from "lucide-react";
 import CurrencyInput from "@/components/ui/currency-input";
 import PhoneInput from "@/components/ui/phone-input";
+import DayInput from "@/components/ui/day-input";
 
 interface CanalFormModalProps {
   isOpen: boolean;
@@ -26,19 +27,52 @@ export default function CanalFormModal({
   mode
 }: CanalFormModalProps) {
   const [formData, setFormData] = useState<CreateCanalData>({
-    name: canal?.name || '',
-    description: canal?.description || '',
-    type: canal?.type || 'direto',
-    contact_person: canal?.contact_person || '',
-    contact_emails: canal?.contact_emails || [''],
-    contact_phone: canal?.contact_phone || '',
-    data_apontamento: canal?.data_apontamento || '',
-    data_faturamento: canal?.data_faturamento || '',
-    data_pagamento: canal?.data_pagamento || '',
-    valor_hora: canal?.valor_hora || 0,
+    name: '',
+    description: '',
+    type: 'direto',
+    contact_person: '',
+    contact_emails: [''],
+    contact_phone: '',
+    data_apontamento: '',
+    data_faturamento: '',
+    data_pagamento: '',
+    valor_hora: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Atualizar formData quando o canal mudar (para modo de edição)
+  useEffect(() => {
+    if (canal) {
+
+      setFormData({
+        name: canal.name || '',
+        description: canal.description || '',
+        type: canal.type || 'direto',
+        contact_person: canal.contact_person || '',
+        contact_emails: canal.contact_emails || [''],
+        contact_phone: canal.contact_phone || '',
+        data_apontamento: canal.data_apontamento ? canal.data_apontamento.toString() : '',
+        data_faturamento: canal.data_faturamento ? canal.data_faturamento.toString() : '',
+        data_pagamento: canal.data_pagamento ? canal.data_pagamento.toString() : '',
+        valor_hora: canal.valor_hora || 0,
+      });
+    } else {
+      // Reset form para modo de criação
+      setFormData({
+        name: '',
+        description: '',
+        type: 'direto',
+        contact_person: '',
+        contact_emails: [''],
+        contact_phone: '',
+        data_apontamento: '',
+        data_faturamento: '',
+        data_pagamento: '',
+        valor_hora: 0,
+      });
+    }
+  }, [canal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +89,14 @@ export default function CanalFormModal({
       };
 
       if (mode === 'create') {
+
         await CanalService.createCanal(dataToSubmit);
       } else if (canal) {
         const updateData: UpdateCanalData = {
           id: canal.id,
           ...dataToSubmit,
         };
+
         await CanalService.updateCanal(updateData);
       }
 
@@ -255,38 +291,29 @@ export default function CanalFormModal({
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="data_apontamento" className="text-sm font-medium">Data de Apontamento</Label>
-              <Input
-                id="data_apontamento"
-                type="date"
-                value={formData.data_apontamento}
-                onChange={(e) => handleChange('data_apontamento', e.target.value)}
-                className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-              />
-            </div>
+            <DayInput
+              id="data_apontamento"
+              label="Dia do Apontamento"
+              value={formData.data_apontamento}
+              onChange={(value) => handleChange('data_apontamento', value)}
+              className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
+            />
 
-            <div>
-              <Label htmlFor="data_faturamento" className="text-sm font-medium">Data de Faturamento</Label>
-              <Input
-                id="data_faturamento"
-                type="date"
-                value={formData.data_faturamento}
-                onChange={(e) => handleChange('data_faturamento', e.target.value)}
-                className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-              />
-            </div>
+            <DayInput
+              id="data_faturamento"
+              label="Dia do Faturamento"
+              value={formData.data_faturamento}
+              onChange={(value) => handleChange('data_faturamento', value)}
+              className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
+            />
 
-            <div>
-              <Label htmlFor="data_pagamento" className="text-sm font-medium">Data de Pagamento</Label>
-              <Input
-                id="data_pagamento"
-                type="date"
-                value={formData.data_pagamento}
-                onChange={(e) => handleChange('data_pagamento', e.target.value)}
-                className="bg-[#23232b] border-[#23232b] text-white h-11 text-base mt-1"
-              />
-            </div>
+            <DayInput
+              id="data_pagamento"
+              label="Dia do Pagamento"
+              value={formData.data_pagamento}
+              onChange={(value) => handleChange('data_pagamento', value)}
+              className="bg-[#23232b] border-[#23232b] text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
+            />
           </div>
         </div>
 

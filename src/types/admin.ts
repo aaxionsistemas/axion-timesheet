@@ -1,6 +1,6 @@
 // Tipos para sistema de administração
 
-export type UserRole = "admin" | "consultant";
+export type UserRole = "view" | "consultant" | "admin" | "master_admin";
 
 export interface User {
   id: string;
@@ -14,11 +14,28 @@ export interface User {
   updated_at: string;
 }
 
+export interface UserWithConsultant extends User {
+  consultant?: {
+    hourly_rate: number;
+    pix_key?: string;
+    bank?: string;
+    specialty?: string;
+    hire_date?: string;
+    skills?: string[];
+    bio?: string;
+  };
+}
+
 export interface Consultant {
   id: string;
+  user_id?: string; // Referência para a tabela users
   name: string;
   email: string;
   hourly_rate: number;
+  specialty?: string;
+  hire_date?: string;
+  skills?: string[];
+  bio?: string;
   pix_key?: string;
   bank?: string;
   is_active: boolean;
@@ -34,9 +51,9 @@ export interface Canal {
   contact_person?: string;
   contact_emails: string[]; // Array de emails
   contact_phone?: string;
-  data_apontamento?: string; // Data de apontamento
-  data_faturamento?: string; // Data de faturamento
-  data_pagamento?: string; // Data de pagamento
+  data_apontamento?: number; // Dia do mês para apontamento (1-31)
+  data_faturamento?: number; // Dia do mês para faturamento (1-31)
+  data_pagamento?: number; // Dia do mês para pagamento (1-31)
   valor_hora: number; // Valor por hora
   is_active: boolean;
   created_at: string;
@@ -65,6 +82,14 @@ export interface CreateUserData {
   phone?: string;
 }
 
+export interface CreateUserWithConsultantData extends CreateUserData {
+  role: "consultant";
+  // Dados específicos do consultor
+  hourly_rate: number;
+  pix_key?: string;
+  bank?: string;
+}
+
 export interface CreateConsultantData {
   name: string;
   email: string;
@@ -81,9 +106,9 @@ export interface CreateCanalData {
   contact_person?: string;
   contact_emails: string[];
   contact_phone?: string;
-  data_apontamento?: string;
-  data_faturamento?: string;
-  data_pagamento?: string;
+  data_apontamento?: string; // String no frontend (será convertida para number no backend)
+  data_faturamento?: string; // String no frontend (será convertida para number no backend)
+  data_pagamento?: string; // String no frontend (será convertida para number no backend)
   valor_hora: number;
 }
 

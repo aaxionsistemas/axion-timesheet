@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import CustomDatePicker from "@/components/ui/datepicker";
 import FileUploadArea from "@/components/FileUploadArea";
 import CurrencyInput from "@/components/ui/currency-input";
-import { CreateProjectData, ProjectStatus, ProjectAttachment } from "@/types/project";
+import MultiConsultantSelect from "@/components/ui/multi-consultant-select";
+import { CreateProjectData, ProjectStatus, ProjectAttachment, ProjectConsultant } from "@/types/project";
 import { CanalService, ConsultantService, ClientService } from "@/lib/adminService";
 import { Canal, Consultant, Client } from "@/types/admin";
 
@@ -34,20 +35,62 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   const [formData, setFormData] = useState<CreateProjectData>({
-    canal: initialData?.canal || "",
-    cliente: initialData?.cliente || "",
-    descricao: initialData?.descricao || "",
-    status: initialData?.status || "planejamento",
-    produto: initialData?.produto || "",
-    valor_hora_canal: initialData?.valor_hora_canal || 0,
-    valor_hora_consultor: initialData?.valor_hora_consultor || 0,
-    consultor: initialData?.consultor || "",
-    estimated_hours: initialData?.estimated_hours || 0,
-    start_date: initialData?.start_date || new Date().toISOString().split('T')[0],
-    end_date: initialData?.end_date || "",
-    notes: initialData?.notes || "",
-    attachments: initialData?.attachments || [],
+    canal: "",
+    cliente: "",
+    descricao: "",
+    status: "planejamento",
+    produto: "",
+    valor_hora_canal: 0,
+    valor_hora_consultor: 0,
+    consultor: "",
+    consultants: [],
+    estimated_hours: 0,
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: "",
+    notes: "",
+    attachments: [],
   });
+
+  // Atualizar formData quando initialData mudar (para modo de edição)
+  useEffect(() => {
+    if (initialData) {
+
+      setFormData({
+        canal: initialData.canal || "",
+        cliente: initialData.cliente || "",
+        descricao: initialData.descricao || "",
+        status: initialData.status || "planejamento",
+        produto: initialData.produto || "",
+        valor_hora_canal: initialData.valor_hora_canal || 0,
+        valor_hora_consultor: initialData.valor_hora_consultor || 0,
+        consultor: initialData.consultor || "",
+        consultants: initialData.consultants || [],
+        estimated_hours: initialData.estimated_hours || 0,
+        start_date: initialData.start_date || new Date().toISOString().split('T')[0],
+        end_date: initialData.end_date || "",
+        notes: initialData.notes || "",
+        attachments: initialData.attachments || [],
+      });
+    } else {
+      // Reset form para modo de criação
+      setFormData({
+        canal: "",
+        cliente: "",
+        descricao: "",
+        status: "planejamento",
+        produto: "",
+        valor_hora_canal: 0,
+        valor_hora_consultor: 0,
+        consultor: "",
+        consultants: [],
+        estimated_hours: 0,
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: "",
+        notes: "",
+        attachments: [],
+      });
+    }
+  }, [initialData]);
 
   // Carregar dados do banco
   useEffect(() => {
@@ -101,7 +144,7 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
     }
   };
 
-  const handleChange = (field: keyof CreateProjectData, value: string | number | ProjectStatus | Date | ProjectAttachment[]) => {
+  const handleChange = (field: keyof CreateProjectData, value: string | number | ProjectStatus | Date | ProjectAttachment[] | ProjectConsultant[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -197,25 +240,13 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
           </select>
         </div>
 
-        <div>
-          <Label htmlFor="consultor" className="text-sm font-medium">Consultor *</Label>
-          <select
-            id="consultor"
-            value={formData.consultor}
-            onChange={(e) => handleConsultorChange(e.target.value)}
-            required
-            disabled={isLoadingData}
-            className="flex h-11 w-full rounded-md border border-[#23232b] bg-[#23232b] px-3 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600 mt-1"
-          >
-            <option value="">
-              {isLoadingData ? "Carregando consultores..." : "Selecione um consultor"}
-            </option>
-            {consultants.map((consultant) => (
-              <option key={consultant.id} value={consultant.id}>
-                {consultant.name}
-              </option>
-            ))}
-          </select>
+        <div className="lg:col-span-2">
+          <MultiConsultantSelect
+            consultants={formData.consultants}
+            availableConsultants={consultants}
+            onChange={(consultants) => handleChange('consultants', consultants)}
+            isLoading={isLoadingData}
+          />
         </div>
 
         <div>
@@ -239,19 +270,6 @@ export default function ProjectForm({ onSubmit, initialData, isLoading }: Projec
               id="valor_hora_canal"
               value={formData.valor_hora_canal}
               onChange={(value) => handleChange("valor_hora_canal", value)}
-              className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
-              placeholder="R$ 0,00"
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="valor_hora_consultor" className="text-sm font-medium">Valor Hora Consultor *</Label>
-          <div className="mt-1">
-            <CurrencyInput
-              id="valor_hora_consultor"
-              value={formData.valor_hora_consultor}
-              onChange={(value) => handleChange("valor_hora_consultor", value)}
               className="bg-[#23232b] border-[#23232b] text-white h-11 text-base"
               placeholder="R$ 0,00"
             />

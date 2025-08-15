@@ -123,8 +123,9 @@ export default function CanalsPage() {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+  const formatDay = (day: number | string) => {
+    if (!day) return '';
+    return `Dia ${day}`;
   };
 
   const averageValorHora = canals.length > 0 ? canals.reduce((sum, c) => sum + c.valor_hora, 0) / canals.length : 0;
@@ -338,13 +339,13 @@ export default function CanalsPage() {
                       <td className="py-3 px-2">
                         <div className="space-y-1 text-xs text-gray-400">
                           {canal.data_apontamento && (
-                            <div>Apontamento: {formatDate(canal.data_apontamento)}</div>
+                            <div>Apontamento: {formatDay(canal.data_apontamento)}</div>
                           )}
                           {canal.data_faturamento && (
-                            <div>Faturamento: {formatDate(canal.data_faturamento)}</div>
+                            <div>Faturamento: {formatDay(canal.data_faturamento)}</div>
                           )}
                           {canal.data_pagamento && (
-                            <div>Pagamento: {formatDate(canal.data_pagamento)}</div>
+                            <div>Pagamento: {formatDay(canal.data_pagamento)}</div>
                           )}
                         </div>
                       </td>

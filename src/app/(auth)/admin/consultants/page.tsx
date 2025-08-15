@@ -25,7 +25,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Consultant } from "@/types/admin";
 import ConsultantFormModal from "@/components/ConsultantFormModal";
-import { ConsultantService } from "@/lib/adminService";
+import UserFormModal from "@/components/UserFormModal";
+import { ConsultantService, UserService } from "@/lib/adminService";
+import { ToastProvider, useToast } from "@/components/ui/toast-provider";
 
 // Mock data - será substituído pelo serviço real
 const mockConsultants: Consultant[] = [
@@ -64,7 +66,8 @@ const mockConsultants: Consultant[] = [
   },
 ];
 
-export default function ConsultantsPage() {
+function ConsultantsPageContent() {
+  const { addToast } = useToast();
   const [consultants, setConsultants] = useState<Consultant[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"active" | "inactive" | "all">("all");
@@ -72,6 +75,9 @@ export default function ConsultantsPage() {
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Estados para o modal de criação de usuário consultor
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   // Carregar consultores do Supabase
   const loadConsultants = async () => {
@@ -106,9 +112,8 @@ export default function ConsultantsPage() {
   });
 
   const handleCreateConsultant = () => {
-    setSelectedConsultant(null);
-    setModalMode('create');
-    setIsModalOpen(true);
+    // Usar o modal de usuário para criar consultor
+    setIsUserModalOpen(true);
   };
 
   const handleEditConsultant = (consultant: Consultant) => {
@@ -138,6 +143,22 @@ export default function ConsultantsPage() {
   const handleSuccess = () => {
     // Recarregar a lista de consultores após criar/editar
     loadConsultants();
+  };
+
+  const handleUserModalSuccess = () => {
+    // Recarregar dados dos consultores após criação de usuário consultor
+    loadConsultants();
+    
+    addToast({
+      type: 'success',
+      title: 'Consultor criado!',
+      description: 'O usuário consultor foi criado com sucesso.',
+      duration: 4000
+    });
+  };
+
+  const handleCloseUserModal = () => {
+    setIsUserModalOpen(false);
   };
 
   const getStatusBadge = (isActive: boolean) => {
@@ -376,6 +397,24 @@ export default function ConsultantsPage() {
         consultant={selectedConsultant}
         mode={modalMode}
       />
+
+      {/* Modal de criação de usuário consultor */}
+      <UserFormModal
+        isOpen={isUserModalOpen}
+        onClose={handleCloseUserModal}
+        onSuccess={handleUserModalSuccess}
+        user={null}
+        mode="create"
+        forceConsultant={true}
+      />
     </main>
+  );
+}
+
+export default function ConsultantsPage() {
+  return (
+    <ToastProvider>
+      <ConsultantsPageContent />
+    </ToastProvider>
   );
 }

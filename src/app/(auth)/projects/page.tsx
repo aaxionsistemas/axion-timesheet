@@ -55,7 +55,7 @@ function ProjectsPageContent() {
       addToast({
         type: 'success',
         title: 'Projeto criado!',
-        message: `O projeto para ${data.cliente} foi criado com sucesso.`
+        message: `O projeto "${data.produto || data.cliente}" foi criado com sucesso.`
       });
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
@@ -87,7 +87,7 @@ function ProjectsPageContent() {
       addToast({
         type: 'success',
         title: 'Projeto atualizado!',
-        message: `As alterações do projeto ${selectedProject.cliente} foram salvas.`
+        message: `As alterações do projeto "${selectedProject.produto || selectedProject.cliente}" foram salvas.`
       });
     } catch (error) {
       console.error('Erro ao atualizar projeto:', error);
@@ -114,7 +114,7 @@ function ProjectsPageContent() {
       addToast({
         type: 'success',
         title: 'Projeto excluído!',
-        message: `O projeto ${deletedProject?.cliente || ''} foi removido com sucesso.`
+        message: `O projeto "${deletedProject?.produto || deletedProject?.cliente || 'selecionado'}" foi removido com sucesso.`
       });
     } catch (error) {
       console.error('Erro ao excluir projeto:', error);

@@ -1,10 +1,12 @@
 import { supabase } from './supabaseClient';
 import { 
   User, 
+  UserWithConsultant,
   Consultant, 
   Canal, 
   Client, 
   CreateUserData, 
+  CreateUserWithConsultantData,
   CreateConsultantData, 
   CreateCanalData, 
   CreateClientData,
@@ -37,6 +39,45 @@ export class UserService {
     }
   }
 
+  // Listar usuários com informações dos consultores quando aplicável
+  static async getUsersWithConsultantInfo(): Promise<UserWithConsultant[]> {
+    try {
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!users) return [];
+
+      // Para cada usuário consultor, buscar dados do consultor
+      const usersWithConsultantData = await Promise.all(
+        users.map(async (user) => {
+          if (user.role === 'consultant') {
+            // Buscar dados do consultor por email (já que não temos user_id)
+            const { data: consultantData } = await supabase
+              .from('consultants')
+              .select('*')
+              .eq('email', user.email)
+              .single();
+
+            return {
+              ...user,
+              consultant: consultantData
+            };
+          }
+          return user;
+        })
+      );
+
+      return usersWithConsultantData;
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+      throw error;
+    }
+  }
+
   // Criar novo usuário
   static async createUser(userData: CreateUserData): Promise<User> {
     try {
@@ -51,6 +92,65 @@ export class UserService {
       return data;
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
+      throw error;
+    }
+  }
+
+  // Criar usuário com dados de consultor (transação)
+  static async createUserWithConsultant(userData: CreateUserWithConsultantData): Promise<User> {
+    try {
+      // Iniciar transação usando RPC
+      const { data, error } = await supabase.rpc('create_user_with_consultant', {
+        user_name: userData.name,
+        user_email: userData.email,
+        consultant_hourly_rate: userData.hourly_rate,
+        user_phone: userData.phone || null,
+        consultant_pix_key: userData.pix_key || null,
+        consultant_bank: userData.bank || null
+      });
+
+      if (error) {
+        // Se RPC não existir, criar manualmente com transação simulada
+        console.warn('RPC não encontrada, criando manualmente...');
+        
+        // 1. Criar usuário
+        const { data: newUser, error: userError } = await supabase
+          .from('users')
+          .insert([{
+            name: userData.name,
+            email: userData.email,
+            role: 'consultant',
+            phone: userData.phone
+          }])
+          .select()
+          .single();
+
+        if (userError) throw userError;
+
+        // 2. Criar consultor vinculado
+        const { error: consultantError } = await supabase
+          .from('consultants')
+          .insert([{
+            name: userData.name,
+            email: userData.email,
+            hourly_rate: userData.hourly_rate,
+            pix_key: userData.pix_key,
+            bank: userData.bank,
+            is_active: true
+          }]);
+
+        if (consultantError) {
+          // Reverter criação do usuário em caso de erro
+          await supabase.from('users').delete().eq('id', newUser.id);
+          throw consultantError;
+        }
+
+        return newUser;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao criar usuário com consultor:', error);
       throw error;
     }
   }
@@ -76,9 +176,68 @@ export class UserService {
     }
   }
 
-  // Deletar usuário
+  // Atualizar usuário consultor (usuário + dados de consultor)
+  static async updateUserWithConsultant(
+    userId: string, 
+    userData: CreateUserData, 
+    consultantData: { hourly_rate: number; pix_key?: string; bank?: string }
+  ): Promise<User> {
+    try {
+      // 1. Atualizar dados do usuário
+      const { data: updatedUser, error: userError } = await supabase
+        .from('users')
+        .update({
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          phone: userData.phone
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (userError) throw userError;
+
+      // 2. Atualizar dados do consultor
+      const { error: consultantError } = await supabase
+        .from('consultants')
+        .update({
+          name: userData.name,
+          email: userData.email,
+          hourly_rate: consultantData.hourly_rate,
+          pix_key: consultantData.pix_key,
+          bank: consultantData.bank
+        })
+        .eq('email', userData.email);
+
+      if (consultantError) throw consultantError;
+
+      return updatedUser;
+    } catch (error) {
+      console.error('Erro ao atualizar usuário consultor:', error);
+      throw error;
+    }
+  }
+
+  // Deletar usuário e dados relacionados
   static async deleteUser(userId: string): Promise<void> {
     try {
+      // Primeiro buscar o email do usuário
+      const { data: userData } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
+      if (userData?.email) {
+        // Deletar registro de consultor se existir
+        await supabase
+          .from('consultants')
+          .delete()
+          .eq('email', userData.email);
+      }
+
+      // Deletar o usuário
       const { error } = await supabase
         .from('users')
         .delete()
@@ -106,6 +265,33 @@ export class ConsultantService {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Se houver consultores com user_id, buscar dados dos usuários
+      if (data && data.length > 0) {
+        const consultantsWithUsers = await Promise.all(
+          data.map(async (consultant) => {
+            if (consultant.user_id) {
+              // Buscar dados do usuário relacionado
+              const { data: userData } = await supabase
+                .from('users')
+                .select('name, email, phone, is_active')
+                .eq('id', consultant.user_id)
+                .single();
+
+              if (userData) {
+                return {
+                  ...consultant,
+                  name: userData.name,
+                  email: userData.email,
+                  is_active: userData.is_active
+                };
+              }
+            }
+            return consultant;
+          })
+        );
+        return consultantsWithUsers;
+      }
 
       return data || [];
     } catch (error) {
@@ -201,9 +387,19 @@ export class CanalService {
   // Criar novo canal
   static async createCanal(canalData: CreateCanalData): Promise<Canal> {
     try {
+      // Converter strings de dias para números inteiros
+      const dataToInsert = {
+        ...canalData,
+        data_apontamento: canalData.data_apontamento ? parseInt(canalData.data_apontamento) : null,
+        data_faturamento: canalData.data_faturamento ? parseInt(canalData.data_faturamento) : null,
+        data_pagamento: canalData.data_pagamento ? parseInt(canalData.data_pagamento) : null,
+      };
+
+
+
       const { data, error } = await supabase
         .from('canals')
-        .insert([canalData])
+        .insert([dataToInsert])
         .select()
         .single();
 
@@ -219,7 +415,15 @@ export class CanalService {
   // Atualizar canal
   static async updateCanal(canalData: UpdateCanalData): Promise<Canal> {
     try {
-      const { id, ...updateData } = canalData;
+      const { id, ...rawUpdateData } = canalData;
+      
+      // Converter strings de dias para números inteiros
+      const updateData = {
+        ...rawUpdateData,
+        data_apontamento: rawUpdateData.data_apontamento ? parseInt(rawUpdateData.data_apontamento) : null,
+        data_faturamento: rawUpdateData.data_faturamento ? parseInt(rawUpdateData.data_faturamento) : null,
+        data_pagamento: rawUpdateData.data_pagamento ? parseInt(rawUpdateData.data_pagamento) : null,
+      };
       
       const { data, error } = await supabase
         .from('canals')
@@ -227,6 +431,8 @@ export class CanalService {
         .eq('id', id)
         .select()
         .single();
+
+
 
       if (error) throw error;
 

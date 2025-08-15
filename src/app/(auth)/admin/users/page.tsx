@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,9 @@ import {
   Phone,
   Calendar,
   MoreVertical,
-  FolderOpen
+  FolderOpen,
+  Eye,
+  Crown
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,47 +26,94 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User as UserType, UserRole } from "@/types/admin";
+import { User as UserType, UserWithConsultant, UserRole } from "@/types/admin";
+import UserFormModal from "@/components/UserFormModal";
+import { UserService } from "@/lib/adminService";
+import { ToastProvider, useToast } from "@/components/ui/toast-provider";
 
 // Mock data - será substituído pelo serviço real
 const mockUsers: UserType[] = [
   {
     id: "1",
-    name: "João Silva",
-    email: "joao@axionsistemas.com.br",
-    role: "admin",
+    name: "João Nunes",
+    email: "joao.nunes@axionsistemas.com",
+    role: "master_admin",
     phone: "(11) 99999-9999",
+    is_active: true,
+    created_at: "2024-01-01T10:00:00Z",
+    updated_at: "2024-01-01T10:00:00Z",
+  },
+  {
+    id: "2",
+    name: "Maria Silva",
+    email: "maria@axionsistemas.com.br",
+    role: "admin",
+    phone: "(11) 88888-8888",
     is_active: true,
     created_at: "2024-01-15T10:00:00Z",
     updated_at: "2024-01-15T10:00:00Z",
   },
   {
-    id: "2",
-    name: "Maria Santos",
-    email: "maria@axionsistemas.com.br",
+    id: "3",
+    name: "Pedro Santos",
+    email: "pedro@axionsistemas.com.br",
     role: "consultant",
-    phone: "(11) 88888-8888",
+    phone: "(11) 77777-7777",
     is_active: true,
     created_at: "2024-01-20T14:30:00Z",
     updated_at: "2024-01-20T14:30:00Z",
   },
   {
-    id: "3",
-    name: "Pedro Costa",
-    email: "pedro@axionsistemas.com.br",
+    id: "4",
+    name: "Ana Costa",
+    email: "ana@axionsistemas.com.br",
     role: "consultant",
-    phone: "(11) 77777-7777",
+    phone: "(11) 66666-6666",
     is_active: false,
     created_at: "2024-02-01T09:15:00Z",
     updated_at: "2024-02-01T09:15:00Z",
   },
+  {
+    id: "5",
+    name: "Carlos Viewer",
+    email: "carlos@cliente.com.br",
+    role: "view",
+    phone: "(11) 55555-5555",
+    is_active: true,
+    created_at: "2024-02-10T16:20:00Z",
+    updated_at: "2024-02-10T16:20:00Z",
+  },
 ];
 
-export default function UsersPage() {
-  const [users] = useState<UserType[]>(mockUsers);
+function UsersPageContent() {
+  const { addToast } = useToast();
+  const [users, setUsers] = useState<UserWithConsultant[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState<UserRole | "all">("all");
   const [filterStatus, setFilterStatus] = useState<"active" | "inactive" | "all">("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserWithConsultant | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Carregar usuários do Supabase
+  const loadUsers = async () => {
+    try {
+      setIsLoading(true);
+      const data = await UserService.getUsersWithConsultantInfo();
+      setUsers(data);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      // Em caso de erro, usar dados mock como fallback
+      setUsers(mockUsers);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,17 +127,43 @@ export default function UsersPage() {
   });
 
   const getRoleBadge = (role: UserRole) => {
-    return role === "admin" ? (
-      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-        <Shield size={12} className="mr-1" />
-        Admin
-      </Badge>
-    ) : (
-      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-        <User size={12} className="mr-1" />
-        Consultor
-      </Badge>
-    );
+    switch (role) {
+      case 'master_admin':
+        return (
+          <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+            <Crown size={12} className="mr-1" />
+            Master Admin
+          </Badge>
+        );
+      case 'admin':
+        return (
+          <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+            <Shield size={12} className="mr-1" />
+            Admin
+          </Badge>
+        );
+      case 'consultant':
+        return (
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+            <User size={12} className="mr-1" />
+            Consultor
+          </Badge>
+        );
+      case 'view':
+        return (
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+            <Eye size={12} className="mr-1" />
+            Visualização
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+            <User size={12} className="mr-1" />
+            Usuário
+          </Badge>
+        );
+    }
   };
 
   const getStatusBadge = (isActive: boolean) => {
@@ -107,6 +182,66 @@ export default function UsersPage() {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  const handleNewUser = () => {
+    setSelectedUser(null);
+    setModalMode('create');
+    setIsModalOpen(true);
+  };
+
+  const handleEditUser = (user: UserWithConsultant) => {
+    setSelectedUser(user);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleModalSuccess = () => {
+    // Recarregar dados dos usuários após criação/edição
+    loadUsers();
+    
+    addToast({
+      type: 'success',
+      title: modalMode === 'create' ? 'Usuário criado!' : 'Usuário atualizado!',
+      description: modalMode === 'create' 
+        ? 'O usuário foi criado com sucesso.' 
+        : 'As informações do usuário foram atualizadas.',
+      duration: 4000
+    });
+  };
+
+  const handleDeleteUser = async (user: UserWithConsultant) => {
+    if (!confirm(`Tem certeza que deseja deletar o usuário "${user.name}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      await UserService.deleteUser(user.id);
+      
+      addToast({
+        type: 'success',
+        title: 'Usuário deletado!',
+        description: `O usuário "${user.name}" foi removido com sucesso.`,
+        duration: 4000
+      });
+
+      // Recarregar lista
+      loadUsers();
+    } catch (error) {
+      console.error('Erro ao deletar usuário:', error);
+      
+      addToast({
+        type: 'error',
+        title: 'Erro ao deletar usuário',
+        description: 'Não foi possível deletar o usuário. Tente novamente.',
+        duration: 5000
+      });
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background p-4 sm:p-6">
       <div className="space-y-6 sm:space-y-8">
@@ -120,6 +255,7 @@ export default function UsersPage() {
           </div>
           
           <button 
+            onClick={handleNewUser}
             className="group flex items-center gap-2 bg-[#23232b] border border-[#2a2a2a] text-white font-medium px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-xl hover:bg-[#2a2a2a] hover:border-gray-600 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] touch-manipulation min-h-[44px] sm:min-h-0"
           >
             <UserPlus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -213,8 +349,10 @@ export default function UsersPage() {
                   className="flex h-10 w-full rounded-md border border-[#23232b] bg-[#23232b] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600"
                 >
                   <option value="all">Todos os Perfis</option>
-                  <option value="admin">Admin</option>
+                  <option value="view">Visualização</option>
                   <option value="consultant">Consultor</option>
+                  <option value="admin">Admin</option>
+                  <option value="master_admin">Master Admin</option>
                 </select>
                 <select
                   value={filterStatus}
@@ -299,6 +437,7 @@ export default function UsersPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleEditUser(user)}
                           className="h-7 w-7 p-0 border-blue-500/50 hover:border-blue-500 hover:bg-blue-500/10"
                         >
                           <Edit size={12} className="text-blue-400" />
@@ -306,6 +445,7 @@ export default function UsersPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleDeleteUser(user)}
                           className="h-7 w-7 p-0 border-red-500/50 hover:border-red-500 hover:bg-red-500/10"
                         >
                           <Trash2 size={12} className="text-red-400" />
@@ -319,7 +459,24 @@ export default function UsersPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Modal de Usuário */}
+        <UserFormModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
+          user={selectedUser}
+          mode={modalMode}
+        />
       </div>
     </main>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <ToastProvider>
+      <UsersPageContent />
+    </ToastProvider>
   );
 }

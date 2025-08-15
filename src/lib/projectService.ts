@@ -24,17 +24,52 @@ interface DatabaseProject {
 }
 
 // Mapear dados do banco para o tipo Project da aplicação
-function mapDatabaseToProject(dbProject: DatabaseProject): Project {
-  return {
+async function mapDatabaseToProject(dbProject: DatabaseProject): Promise<Project> {
+  // Buscar consultores do projeto na nova tabela
+  const { data: consultants, error: consultantsError } = await supabase
+    .from('project_consultants')
+    .select('consultant_id, consultant_name, hourly_rate')
+    .eq('project_id', dbProject.id);
+
+  if (consultantsError) {
+    console.error('Erro ao buscar consultores do projeto:', consultantsError);
+  }
+
+  // Buscar nome do canal se for um ID
+  let canalName = dbProject.canal || '';
+  if (dbProject.canal && dbProject.canal.includes('-')) { // Se parece com UUID
+    const { data: canal } = await supabase
+      .from('canals')
+      .select('name')
+      .eq('id', dbProject.canal)
+      .single();
+    canalName = canal?.name || dbProject.canal;
+  }
+
+  // Buscar nome do cliente se for um ID
+  let clienteName = dbProject.cliente || '';
+  if (dbProject.cliente && dbProject.cliente.includes('-')) { // Se parece com UUID
+    const { data: client } = await supabase
+      .from('clients')
+      .select('name, company')
+      .eq('id', dbProject.cliente)
+      .single();
+    clienteName = client?.company || client?.name || dbProject.cliente;
+  }
+
+  const project = {
     id: dbProject.id,
-    canal: dbProject.canal || '',
-    cliente: dbProject.cliente || '',
+    canal: dbProject.canal || '', // Manter ID original para formulários
+    cliente: dbProject.cliente || '', // Manter ID original para formulários
+    canal_name: canalName, // Nome para exibição
+    cliente_name: clienteName, // Nome para exibição
     descricao: dbProject.descricao || dbProject.description || '',
     status: dbProject.status,
     produto: dbProject.produto || '',
     valor_hora_canal: dbProject.valor_hora_canal || 0,
     valor_hora_consultor: dbProject.valor_hora_consultor || 0,
     consultor: dbProject.consultor || '',
+    consultants: consultants || [],
     estimated_hours: dbProject.estimated_hours || 0,
     worked_hours: dbProject.worked_hours || 0,
     start_date: dbProject.start_date,
@@ -44,6 +79,8 @@ function mapDatabaseToProject(dbProject: DatabaseProject): Project {
     notes: dbProject.notes,
     attachments: [] // Será carregado separadamente se necessário
   };
+  
+  return project;
 }
 
 // Mapear dados da aplicação para o formato do banco
@@ -82,7 +119,11 @@ export class ProjectService {
         throw new Error(`Erro ao buscar projetos: ${error.message}`);
       }
 
-      return data?.map(mapDatabaseToProject) || [];
+      if (!data) return [];
+      
+      // Mapear projetos com seus consultores
+      const projects = await Promise.all(data.map(mapDatabaseToProject));
+      return projects;
     } catch (error) {
       console.error('Erro no serviço de projetos:', error);
       throw error;
@@ -106,7 +147,7 @@ export class ProjectService {
         throw new Error(`Erro ao buscar projeto: ${error.message}`);
       }
 
-      return data ? mapDatabaseToProject(data) : null;
+      return data ? await mapDatabaseToProject(data) : null;
     } catch (error) {
       console.error('Erro no serviço de projeto:', error);
       throw error;
@@ -118,6 +159,7 @@ export class ProjectService {
     try {
       const dbData = mapProjectToDatabase(projectData);
       
+      // 1. Criar o projeto
       const { data, error } = await supabase
         .from('projects')
         .insert([dbData])
@@ -129,7 +171,27 @@ export class ProjectService {
         throw new Error(`Erro ao criar projeto: ${error.message}`);
       }
 
-      return mapDatabaseToProject(data);
+      // 2. Salvar consultores na tabela project_consultants
+      if (projectData.consultants && projectData.consultants.length > 0) {
+        const consultantsData = projectData.consultants.map(consultant => ({
+          project_id: data.id,
+          consultant_id: consultant.consultant_id,
+          consultant_name: consultant.consultant_name || '',
+          consultant_email: '', // Buscar depois se necessário
+          hourly_rate: consultant.hourly_rate
+        }));
+
+        const { error: consultantsError } = await supabase
+          .from('project_consultants')
+          .insert(consultantsData);
+
+        if (consultantsError) {
+          console.error('Erro ao salvar consultores:', consultantsError);
+          // Não falhamos o projeto por isso, apenas logamos
+        }
+      }
+
+      return await mapDatabaseToProject(data);
     } catch (error) {
       console.error('Erro no serviço de criação de projeto:', error);
       throw error;
@@ -139,9 +201,10 @@ export class ProjectService {
   // Atualizar projeto
   static async updateProject(projectData: UpdateProjectData): Promise<Project> {
     try {
-      const { id, ...updateData } = projectData;
+      const { id, consultants, ...updateData } = projectData;
       const dbData = mapProjectToDatabase(updateData);
 
+      // 1. Atualizar o projeto
       const { data, error } = await supabase
         .from('projects')
         .update(dbData)
@@ -154,7 +217,41 @@ export class ProjectService {
         throw new Error(`Erro ao atualizar projeto: ${error.message}`);
       }
 
-      return mapDatabaseToProject(data);
+      // 2. Atualizar consultores se fornecidos
+      if (consultants !== undefined) {
+
+        
+        // Remover consultores antigos
+        const { error: deleteError } = await supabase
+          .from('project_consultants')
+          .delete()
+          .eq('project_id', id);
+          
+        if (deleteError) {
+          console.error('Erro ao remover consultores antigos:', deleteError);
+        }
+
+        // Adicionar novos consultores
+        if (consultants.length > 0) {
+          const consultantsData = consultants.map(consultant => ({
+            project_id: id,
+            consultant_id: consultant.consultant_id,
+            consultant_name: consultant.consultant_name || '',
+            consultant_email: '',
+            hourly_rate: consultant.hourly_rate
+          }));
+
+          const { error: consultantsError } = await supabase
+            .from('project_consultants')
+            .insert(consultantsData);
+
+          if (consultantsError) {
+            console.error('Erro ao atualizar consultores:', consultantsError);
+          }
+        }
+      }
+
+      return await mapDatabaseToProject(data);
     } catch (error) {
       console.error('Erro no serviço de atualização de projeto:', error);
       throw error;
